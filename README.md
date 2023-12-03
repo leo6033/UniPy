@@ -6,6 +6,7 @@ Currently it is possible to build under the windows platform, if you put the Pyt
 
 
 TODOList:
+  + support script reload in editor. If you know Unity's package PythonScript you know that if you want to update a script that has been imported, you need to restart Unity Editor, which makes the development process very cumbersome.
   + support import python file by unity resource load method, such as Resource, BundleResource, AddressableAsset.
   + support macos
   + research build for mobile, android & ios
