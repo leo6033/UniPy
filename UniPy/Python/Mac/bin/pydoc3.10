@@ -1,0 +1,5 @@
+#!/Users/zealotsean/Documents/GitHub/Python-Apple-support/install/macOS/macosx/python-3.10.13/bin/python3.10
+
+import pydoc
+if __name__ == '__main__':
+    pydoc.cli()
