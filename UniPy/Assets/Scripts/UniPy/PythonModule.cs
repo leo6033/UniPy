@@ -6,9 +6,29 @@ using UnityEngine;
 
 namespace Disc0ver.PythonPlugin
 {
+    [Serializable]
+    public class PythonEnvConfig
+    {
+        public string pythonHome;
+        public string pythonDLL;
+    }
+    
     public class PythonModule
     {
-        private const string PythonHome = "Python/PythonLib";
+#if UNITY_STANDALONE_OSX 
+        private static readonly PythonEnvConfig PythonEnvConfig = new PythonEnvConfig()
+        {
+            pythonHome ="Python/Mac",
+            pythonDLL = "lib/libpython3.10.dylib"
+        };
+#else
+        private static readonly PythonEnvConfig PythonEnvConfig = new PythonEnvConfig()
+        {
+            pythonHome ="Assets/Resources/PythonLib/Windows",
+            pythonDLL = "Python310.dll"
+        };
+#endif
+        // private const string PythonHome = "Python/PythonLib";
 
         /// <summary>
         /// relative path in unity project root
@@ -215,15 +235,31 @@ namespace Disc0ver.PythonPlugin
             Debug.Log($"prefix: {prefix}");
             Environment.SetEnvironmentVariable("PYTHONDONTWRITEBYTECODE", "1");
             Environment.SetEnvironmentVariable("PYTHONNOUSERSITE", "1");
-            Runtime.PythonDLL = prefix + PythonHome + "/python37.dll";
-            PythonEngine.PythonHome = prefix + PythonHome;
+            Runtime.PythonDLL = prefix + PythonEnvConfig.pythonHome + "/" + PythonEnvConfig.pythonDLL;
+
+#if UNITY_STANDALONE_OSX
+            PythonEngine.PythonHome = $"{prefix + PythonEnvConfig.pythonHome}:{prefix + PythonEnvConfig.pythonHome}";
+            // PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome}/lib;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10/lib-dynload;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10/site-packages;";
+#else
+            PythonEngine.PythonHome = prefix + PythonEnvConfig.pythonHome;
+            PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome};{prefix + PythonEnvConfig.pythonHome}/DLLs;{prefix + PythonEnvConfig.pythonHome}/Lib";
+#endif
         }
 
-        public static void Shutdown()
+        public static void PyShutdown()
         {
             // RunFile("reload.py", "main");
-            RunString("import reload\nreload.reload()");
+            // RunString("import reload\nreload.reload()");
             PythonEngine.Shutdown();
         }
+        
+#if UNITY_EDITOR
+        // [MenuItem("Engine/PyReload")]
+        public static void Reload()
+        {
+            RunString("import reload\nreload.reload()");
+        }
+            
+#endif
     }
 }

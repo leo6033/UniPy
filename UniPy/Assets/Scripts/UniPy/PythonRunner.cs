@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using Python.Runtime;
 using UnityEditor;
-using UnityEngine;
 
 namespace Disc0ver.PythonPlugin
 {
@@ -22,9 +19,12 @@ namespace Disc0ver.PythonPlugin
         private static void OnPlayModeStateChange(PlayModeStateChange change)
         {
             if (change == PlayModeStateChange.EnteredPlayMode)
+            {
                 PythonModule.Initialize();
-            if (change == PlayModeStateChange.ExitingPlayMode)
-                PythonModule.Shutdown();
+                PythonModule.Reload();
+            }
+            if (change == PlayModeStateChange.EnteredEditMode)
+                PythonModule.PyShutdown();
         }
 #else
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -37,11 +37,10 @@ namespace Disc0ver.PythonPlugin
         private static void PythonShutdown()
         {
             Application.quitting -= PythonShutdown;
-            PythonModule.Shutdown();
+            PythonModule.PyShutdown();
         }
 #endif
 
         
     }
 }
-
