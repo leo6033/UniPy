@@ -1,6 +1,7 @@
 
 
 using System;
+using Disc0ver.PythonPlugin;
 using Python.Runtime;
 using UnityEngine;
 
@@ -20,48 +21,56 @@ namespace Disc0ver.Engine
 
         private void Awake()
         {
-            var module = PyModule.Import(scriptPath);
-            var pyClass = module.GetAttr(className);
-            _pyObject = pyClass.Invoke();
+            using (Py.GIL())
+            {
+                var module = PythonModule.Import(scriptPath);
+                var pyClass = module.GetAttr(className);
+                _pyObject = pyClass.Invoke();
             
-            Env.SetAttr("Controller", this.ToPython());
+                Env.SetAttr("Controller", this.ToPython());
 
-            if (Env.GetAttr("Start") != PyObject.None)
-            {
-                Debug.Log("behaviour start");
-                _pyStart += () =>
+                if (Env.GetAttr("Start") != PyObject.None)
                 {
-                    Env.InvokeMethod("Start");
-                };
-            }
+                    Debug.Log("behaviour start");
+                    _pyStart += () =>
+                    {
+                        Env.InvokeMethod("Start");
+                    };
+                }
 
-            if (Env.GetAttr("OnDestroy") != PyObject.None)
-            {
-                Debug.Log("behaviour destroy");
-                _pyOnDestroy += () =>
+                if (Env.GetAttr("OnDestroy") != PyObject.None)
                 {
-                    Env.InvokeMethod("OnDestroy");
-                };
-            }
+                    Debug.Log("behaviour destroy");
+                    _pyOnDestroy += () =>
+                    {
+                        Env.InvokeMethod("OnDestroy");
+                    };
+                }
             
-            if (Env.GetAttr("Awake") != PyObject.None)
-            {
-                Env.InvokeMethod("Awake");
+                if (Env.GetAttr("Awake") != PyObject.None)
+                {
+                    Env.InvokeMethod("Awake");
+                }
             }
-            
         }
 
         private void Start()
         {
-            _pyStart.Invoke();
+            using (Py.GIL())
+            {
+                _pyStart.Invoke();
+            }
         }
 
         private void OnDestroy()
         {
-            Env.DelAttr("Controller");
-            if(PythonEngine.IsInitialized)
-                _pyOnDestroy.Invoke();
-            _pyObject = null;
+            using (Py.GIL())
+            {
+                Env.DelAttr("Controller");
+                if(PythonEngine.IsInitialized)
+                    _pyOnDestroy.Invoke();
+                _pyObject = null;
+            }
         }
     }
 }

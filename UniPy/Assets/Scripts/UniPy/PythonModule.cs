@@ -246,10 +246,18 @@ namespace Disc0ver.PythonPlugin
 #endif
         }
 
+        public static PyObject Import(string moduleName)
+        {
+            if (!IsInitialized)
+                Initialize();
+            return PyModule.Import(moduleName);
+        }
+
         public static void PyShutdown()
         {
             // RunFile("reload.py", "main");
-            // RunString("import reload\nreload.reload()");
+            _scope = null;
+            _isInitialized = false;
             PythonEngine.Shutdown();
         }
         
