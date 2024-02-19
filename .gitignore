@@ -73,6 +73,6 @@ Unipy/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 Unipy/.idea/*
 
-*.py[cod]
+# *.py[cod]
 __pycache__/*
 */test/*
