@@ -3,9 +3,15 @@ NEED_RELOAD = True
 import gg
 import UnityEngine
 import Disc0ver
+import Utils.Utils as Utils
+
 
 def main():
     gg.Log.SetLogImpl(Disc0ver.Engine.Log)
+
+    if Utils.IsEditorPlatform():
+        gg.Log.Info("Enable Debug")
+        Utils.EnableDebug()
 
     import UIModule.UIModule as UIModule
     gg.UI = UIModule.UIModule()

@@ -24,7 +24,7 @@ namespace Disc0ver.PythonPlugin
 #else
         private static readonly PythonEnvConfig PythonEnvConfig = new PythonEnvConfig()
         {
-            pythonHome ="Assets/Resources/PythonLib/Windows",
+            pythonHome ="Python/Windows",
             pythonDLL = "Python310.dll"
         };
 #endif
@@ -35,7 +35,8 @@ namespace Disc0ver.PythonPlugin
         /// </summary>
         private static readonly List<string> PySitePackages = new List<string>
         {
-            "Python/PyScripts"
+            "Python/PyScripts",
+            "Python/PyScripts/site-packages"
         };
 
         private static PyModule _scope;
@@ -241,8 +242,8 @@ namespace Disc0ver.PythonPlugin
             PythonEngine.PythonHome = $"{prefix + PythonEnvConfig.pythonHome}:{prefix + PythonEnvConfig.pythonHome}";
             // PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome}/lib;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10/lib-dynload;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10/site-packages;";
 #else
-            PythonEngine.PythonHome = prefix + PythonEnvConfig.pythonHome;
-            PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome};{prefix + PythonEnvConfig.pythonHome}/DLLs;{prefix + PythonEnvConfig.pythonHome}/Lib";
+            PythonEngine.PythonHome = $"{prefix + PythonEnvConfig.pythonHome}";
+            PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome};{prefix + PythonEnvConfig.pythonHome}/DLLs;{prefix + PythonEnvConfig.pythonHome}/Lib;{prefix + PythonEnvConfig.pythonHome}/Lib/site-packages";
 #endif
         }
 
@@ -255,10 +256,12 @@ namespace Disc0ver.PythonPlugin
 
         public static void PyShutdown()
         {
-            // RunFile("reload.py", "main");
-            _scope = null;
-            _isInitialized = false;
-            PythonEngine.Shutdown();
+            if (_isInitialized)
+            {
+                _isInitialized = false;
+                _scope = null;
+                PythonEngine.Shutdown();
+            }
         }
         
 #if UNITY_EDITOR

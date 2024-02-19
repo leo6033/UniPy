@@ -9,10 +9,10 @@ namespace Disc0ver.PythonPlugin
         [InitializeOnLoadMethod]
         static void Initialize()
         {
-            EditorApplication.delayCall -= PythonModule.Initialize;
+            // EditorApplication.delayCall -= PythonModule.Initialize;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChange;
             
-            EditorApplication.delayCall += PythonModule.Initialize;
+            // EditorApplication.delayCall += PythonModule.Initialize;
             EditorApplication.playModeStateChanged += OnPlayModeStateChange;
         }
         
@@ -23,8 +23,8 @@ namespace Disc0ver.PythonPlugin
                 PythonModule.Initialize();
                 PythonModule.Reload();
             }
-            if (change == PlayModeStateChange.EnteredEditMode)
-                PythonModule.PyShutdown();
+            // if (change == PlayModeStateChange.EnteredEditMode)
+            //     PythonModule.PyShutdown();
         }
 #else
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

@@ -8,7 +8,7 @@ def reload():
     for key, value in sys.modules.items():
         if hasattr(value, "NEED_RELOAD") and getattr(value, "NEED_RELOAD"):
             modules_to_reload.append(key)
-        elif hasattr(value, "__loader__") and hasattr(value.__loader__, "path") and value.__loader__.path.find("PyScripts") > 0:
+        elif hasattr(value, "__loader__") and hasattr(value.__loader__, "path") and value.__loader__.path.find("PyScripts") > 0 and value.__loader__.path.find("site-packages") < 0:
             modules_to_reload.append(key)
 
     print("modules need to reload: ", modules_to_reload)
