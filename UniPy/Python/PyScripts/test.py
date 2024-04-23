@@ -74,3 +74,16 @@ gg.Event.BroadCast("test1", "temp")
 gg.Event.BroadCast("test2", "temp", temp2 ="temp1", temp1 ="temp2")
 
 gg.UI.ShowWindow("TestWindow", {})
+
+
+def test_coroutine():
+    count = 0
+    while count < 10:
+        count += 1
+        gg.Log.Debug(f"[test_coroutine] {count}")
+        # yield Disc0ver.Engine.PyCoroutine.Instance.WaitForSeconds(1)
+        yield UnityEngine.WaitForSeconds(1)
+
+    yield None
+
+Disc0ver.Engine.PyCoroutine.Instance.StartCoroutine(test_coroutine())
