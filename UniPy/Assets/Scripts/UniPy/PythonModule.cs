@@ -6,38 +6,73 @@ using UnityEngine;
 
 namespace Disc0ver.PythonPlugin
 {
-    [Serializable]
-    public class PythonEnvConfig
-    {
-        public string pythonHome;
-        public string pythonDLL;
-    }
-    
-    public class PythonModule
-    {
-#if UNITY_STANDALONE_OSX 
-        private static readonly PythonEnvConfig PythonEnvConfig = new PythonEnvConfig()
-        {
-            pythonHome ="Python/Mac",
-            pythonDLL = "lib/libpython3.10.dylib"
-        };
-#else
-        private static readonly PythonEnvConfig PythonEnvConfig = new PythonEnvConfig()
-        {
-            pythonHome ="Python/Windows",
-            pythonDLL = "Python310.dll"
-        };
-#endif
-        // private const string PythonHome = "Python/PythonLib";
 
-        /// <summary>
-        /// relative path in unity project root
-        /// </summary>
-        private static readonly List<string> PySitePackages = new List<string>
+    public sealed class PythonEnvConfig : ScriptableObject
+    {
+        public string PythonHome => $"{prefix}/{pythonHome}";
+#if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+        public const string PreferencesPath = "ProjectSettings/PythonSettingMac.asset";
+        [FolderPath(AbsolutePath = true)]
+        public string prefix = Environment.CurrentDirectory + "/";
+        [FolderPath(ParentFolder = "@prefix")]
+        public string pythonHome = "Python/Mac";
+        [Sirenix.OdinInspector.FilePath(ParentFolder = "@PythonHome")]
+        public string pythonDLL = "lib/libpython3.10.dylib";
+#else
+        public const string PreferencesPath = "ProjectSettings/PythonSetting.asset";
+        [FolderPath(AbsolutePath = true)]
+        public string prefix = Environment.CurrentDirectory + "/";
+        [FolderPath(ParentFolder = "@prefix")]
+        public string pythonHome = "Python/Windows";
+        [Sirenix.OdinInspector.FilePath(ParentFolder = "@PythonHome")]
+        public string pythonDLL = "Python310.dll";
+#endif
+        
+        [FolderPath]
+        public List<string> pySitePackages = new List<string>
         {
             "Python/PyScripts",
             "Python/PyScripts/site-packages"
         };
+
+        private static PythonEnvConfig _instance;
+        public static PythonEnvConfig Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = CreateInstance<PythonEnvConfig>();
+                    try
+                    {
+                        var fileData = File.ReadAllText(PreferencesPath);
+                        JsonUtility.FromJsonOverwrite(fileData, _instance);
+                    }
+                    catch
+                    {
+                        _instance.Save();
+                    }
+                    
+                }
+
+                return _instance;
+            }
+        }
+        
+        public void Save()
+        {
+
+            var dirName = Path.GetDirectoryName(PreferencesPath);
+            if (!Directory.Exists(dirName))
+                Directory.CreateDirectory(dirName);
+            
+            File.WriteAllText(PreferencesPath, JsonUtility.ToJson(_instance, true));
+        }
+    }
+    
+    
+    public class PythonModule
+    {
 
         private static PyModule _scope;
 
@@ -137,12 +172,15 @@ namespace Disc0ver.PythonPlugin
 
         static void DoInitialized()
         {
+            if (PythonEngine.IsInitialized)
+                return;
+
             SetPythonEnvironment();
             PythonEngine.Initialize();
             
             using (Py.GIL())
             {
-                AddSitePackages(PySitePackages);
+                AddSitePackages(PythonEnvConfig.Instance.pySitePackages);
 
                 var sys = Py.Import("sys");
                 var sysPath = sys.GetAttr("path").ToString();
@@ -239,11 +277,11 @@ namespace Disc0ver.PythonPlugin
             Runtime.PythonDLL = prefix + PythonEnvConfig.pythonHome + "/" + PythonEnvConfig.pythonDLL;
 
 #if UNITY_STANDALONE_OSX
-            PythonEngine.PythonHome = $"{prefix + PythonEnvConfig.pythonHome}:{prefix + PythonEnvConfig.pythonHome}";
+            PythonEngine.PythonHome = $"{prefix + PythonEnvConfig.Instance.pythonHome}:{prefix + PythonEnvConfig.Instance.pythonHome}";
             // PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome}/lib;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10/lib-dynload;{prefix + PythonEnvConfig.pythonHome}/lib/python3.10/site-packages;";
 #else
-            PythonEngine.PythonHome = $"{prefix + PythonEnvConfig.pythonHome}";
-            PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.pythonHome};{prefix + PythonEnvConfig.pythonHome}/DLLs;{prefix + PythonEnvConfig.pythonHome}/Lib;{prefix + PythonEnvConfig.pythonHome}/Lib/site-packages";
+            PythonEngine.PythonHome = prefix + PythonEnvConfig.Instance.pythonHome;
+            PythonEngine.PythonPath = $"{prefix + PythonEnvConfig.Instance.pythonHome};{prefix + PythonEnvConfig.Instance.pythonHome}/DLL;{prefix + PythonEnvConfig.Instance.pythonHome}/DLLs;{prefix + PythonEnvConfig.Instance.pythonHome}/Lib;{prefix + PythonEnvConfig.Instance.pythonHome}/Lib/site-packages";
 #endif
         }
 
