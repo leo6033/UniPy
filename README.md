@@ -13,7 +13,7 @@ You can just copy [Scripts](UniPy/Assets/Scripts) and [Python](UniPy/Python) dir
   - [x] python debug support
   - [ ] research build for android & ios
   - [ ] support import python file by unity resource load method, such as Resource, BundleResource, AddressableAsset, if necessary
-  - [ ] Editor config support for python env set and site-packages set
+  - [x] Editor config support for python env set and site-packages set
 
 ## debug setting
 Here I use [ptvsd](https://github.com/microsoft/ptvsd) to support python debugging. You can set config file like this if you use vscode.
